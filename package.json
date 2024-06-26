@@ -1,0 +1,22 @@
+{
+  "name": "ytm-koa",
+  "version": "1.0.0",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node musicManager.js",
+    "clean": "rm ./Library/index.json ./Library/*.jpg"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "jpeg-js": "^0.4.4",
+    "koa": "^2.15.3",
+    "koa-jwt": "^4.0.4",
+    "music-metadata": "^8.3.0"
+  }
+}
