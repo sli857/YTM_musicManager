@@ -76,7 +76,7 @@ const indexCreate = async (path) => {
 
 parentPort.on("message", async (paths) => {
   for (const path of paths) {
-    await indexCreate(path);
+    indexCreate(path);
   }
   parentPort.postMessage("done");
 });
