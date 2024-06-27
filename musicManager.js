@@ -25,7 +25,7 @@ const splitPath = (paths, n) => {
 const runWorkers = async (jobs, indexPath) => {
   const workerPromises = jobs.map((job, i) => {
     return new Promise((resolve) => {
-      const worker = new Worker("./worker.js");
+      const worker = new Worker("./loadWorker.js");
       worker.postMessage(job);
       worker.on("message", (message) => {
         if (message === "done") {
@@ -49,7 +49,7 @@ const runWorkers = async (jobs, indexPath) => {
   process.exit(0);
 };
 
-const libraryInit = (path) => {
+const libraryInit = async (path) => {
   const paths = loadFiles(path);
 
   //create index.js if not exists
@@ -65,19 +65,22 @@ const libraryInit = (path) => {
   //split jobs by # of cores
   const jobs = splitPath(paths, cpus);
 
-  runWorkers(jobs, indexPath);
+  await runWorkers(jobs, indexPath);
 };
 
-const libraryLoad = (filePath) => {
+const libraryLoad = async (filePath) => {
   if (!fs.existsSync(filePath)) {
-    libraryInit("./Library");
-    return;
+    await libraryInit("./Library");
   }
-
-  const index = fs.readFileSync(filePath, "utf-8");
-  lib = JSON.parse(index);
-  console.log(lib);
-  libraryUpdate(lib, filePath);
+  try {
+    const data = fs.readFileSync(filePath, "utf8");
+    const lib = JSON.parse(data);
+    console.log(lib);
+    libraryUpdate(lib, "./Library");
+    return lib;
+  } catch (err) {
+    console.error(err);
+  }
 };
 
 const libraryUpdate = (lib, path) => {
