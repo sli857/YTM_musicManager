@@ -13,6 +13,7 @@ const storeImage = async (album_id, image) => {
   await fs.writeFile(`./Library/${album_id}.jpg`, image, (err) => {
     if (err) throw err;
   });
+  console.log(`Stored Iamge: Album ${album_id}.`);
   return;
 };
 
@@ -75,8 +76,7 @@ const indexCreate = async (path) => {
 };
 
 parentPort.on("message", async (paths) => {
-  for (const path of paths) {
-    indexCreate(path);
-  }
+  const indexCreatePromises = paths.map((path) => indexCreate(path));
+  await Promise.all(indexCreatePromises);
   parentPort.postMessage("done");
 });
