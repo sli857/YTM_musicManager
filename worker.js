@@ -75,8 +75,17 @@ const indexCreate = async (path) => {
   }
 };
 
-parentPort.on("message", async (paths) => {
-  const indexCreatePromises = paths.map((path) => indexCreate(path));
-  await Promise.all(indexCreatePromises);
-  parentPort.postMessage("done");
+parentPort.on("message", async (message) => {
+  switch (message.task) {
+    case "init":
+      const indexCreatePromises = message.data.map((path) => indexCreate(path));
+      await Promise.all(indexCreatePromises);
+      parentPort.postMessage("done");
+      break;
+    case "update":
+      parentPort.postMessage("updating");
+      break;
+    default:
+      parentPort.postMessage({ error: "Unknown task" });
+  }
 });

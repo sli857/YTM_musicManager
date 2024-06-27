@@ -25,8 +25,8 @@ const splitPath = (paths, n) => {
 const runWorkers = async (jobs, indexPath) => {
   const workerPromises = jobs.map((job, i) => {
     return new Promise((resolve) => {
-      const worker = new Worker("./loadWorker.js");
-      worker.postMessage(job);
+      const worker = new Worker("./worker.js");
+      worker.postMessage({ task: "init", data: job });
       worker.on("message", (message) => {
         if (message === "done") {
           console.log(`Worker ${i} completed`);
@@ -71,6 +71,7 @@ const libraryInit = async (path) => {
 const libraryLoad = async (filePath) => {
   if (!fs.existsSync(filePath)) {
     await libraryInit("./Library");
+    return;
   }
   try {
     const data = fs.readFileSync(filePath, "utf8");
@@ -84,7 +85,10 @@ const libraryLoad = async (filePath) => {
 };
 
 const libraryUpdate = (lib, path) => {
-  //update lib
+  const paths = loadFiles(path);
+  const cpus = os.cpus().length;
+  const jobs = splitPath(paths, cpus);
+  // TODO飛機場的10_30.mp3
   return;
 };
 
