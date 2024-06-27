@@ -1,5 +1,6 @@
 import fs from "fs";
 import os from "os";
+import { stringify } from "querystring";
 import { Worker } from "worker_threads";
 
 var lib = [];
@@ -22,14 +23,14 @@ const splitPath = (paths, n) => {
   return splitted;
 };
 
-const runWorkers = async (jobs, indexPath) => {
+const runInitWorkers = async (jobs, indexPath) => {
   const workerPromises = jobs.map((job, i) => {
     return new Promise((resolve) => {
       const worker = new Worker("./worker.js");
-      worker.postMessage({ task: "init", data: job });
+      worker.postMessage({ task: "init", job: job });
       worker.on("message", (message) => {
-        if (message === "done") {
-          console.log(`Worker ${i} completed`);
+        if (message.status === "done") {
+          console.log(`Init worker ${i} completed`);
           resolve();
         }
       });
@@ -45,8 +46,29 @@ const runWorkers = async (jobs, indexPath) => {
   // enclose body
   fs.appendFileSync(indexPath, "\n]");
 
-  console.log("All workers completed");
+  console.log("All init workers completed");
   process.exit(0);
+};
+
+const runUpdateWorkers = async (lib, jobs) => {
+  const workerPromises = jobs.map((job, i) => {
+    return new Promise((resolve) => {
+      const worker = new Worker("./worker.js");
+      worker.postMessage({ task: "update", job: job, lib: lib });
+      // TODO worker.on();
+      worker.on("message", (message) => {
+        //console.log(message.toAdd);
+        if (message.toAdd.length !== 0) {
+          message.toAdd.forEach((item) => {
+            lib.push(item);
+            console.log(`The following track will be added: ${item.file}`);
+          });
+        }
+        resolve();
+      });
+    });
+  });
+  await Promise.all(workerPromises);
 };
 
 const libraryInit = async (path) => {
@@ -65,7 +87,7 @@ const libraryInit = async (path) => {
   //split jobs by # of cores
   const jobs = splitPath(paths, cpus);
 
-  await runWorkers(jobs, indexPath);
+  await runInitWorkers(jobs, indexPath);
 };
 
 const libraryLoad = async (filePath) => {
@@ -76,19 +98,40 @@ const libraryLoad = async (filePath) => {
   try {
     const data = fs.readFileSync(filePath, "utf8");
     const lib = JSON.parse(data);
-    console.log(lib);
-    libraryUpdate(lib, "./Library");
-    return lib;
+    await libraryUpdate(lib, "./Library");
+    process.exit(0);
   } catch (err) {
     console.error(err);
   }
 };
 
-const libraryUpdate = (lib, path) => {
+const libraryUpdate = async (lib, path) => {
+  // delete non-existing records
+  lib = await lib.filter((item) => {
+    const path = item.file;
+    const exist = fs.existsSync(path);
+    if (!exist) console.log(`Removed non-existing record: ${path}`);
+    return exist;
+  });
+
+  // load new files into memory (lib)
   const paths = loadFiles(path);
   const cpus = os.cpus().length;
   const jobs = splitPath(paths, cpus);
-  // TODO飛機場的10_30.mp3
+  await runUpdateWorkers(lib, jobs);
+
+  // flush updated lib to index.js
+  try {
+    fs.writeFileSync(
+      "./Library/index.json",
+      JSON.stringify(lib, null, 2),
+      "utf-8"
+    );
+  } catch (err) {
+    console.error(err);
+  }
+  console.log("Library has been updated. Index.json is up-to-date");
+  console.log(`In total: ${lib.length} tracks`);
   return;
 };
 
