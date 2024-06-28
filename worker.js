@@ -1,7 +1,8 @@
 import { parentPort } from "worker_threads";
 import { parseFile } from "music-metadata";
-import fs, { readFile } from "fs";
+import fs from "fs";
 import crypto from "crypto";
+import jpeg from "jpeg-js";
 
 const storeImage = async (album_id, image) => {
   if (fs.existsSync(`./Library/${album_id}.jpg`)) {
@@ -10,7 +11,15 @@ const storeImage = async (album_id, image) => {
     );
     return;
   }
-  await fs.writeFile(`./Library/${album_id}.jpg`, image, (err) => {
+  // screen out non-jpeg images for now
+  if (image[0].data[0] !== 0xff || image[0].data[1] !== 0xd8) {
+    return;
+  }
+
+  const raw = jpeg.decode(image[0].data, { useTArray: true });
+  const data = jpeg.encode(raw, 100);
+
+  fs.writeFile(`./Library/${album_id}.jpg`, data.data, (err) => {
     if (err) throw err;
   });
   console.log(`Stored Iamge: Album ${album_id}.`);
@@ -69,7 +78,7 @@ const indexCreate = async (path) => {
 
     // async write to two files
     writeToIndex(info);
-    storeImage(info.album_id, metadata.common.picture[0].data);
+    storeImage(info.album_id, metadata.common.picture);
 
     console.log(`Index created: ${info.trackid} ${info.file}`);
   } catch (err) {
