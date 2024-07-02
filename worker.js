@@ -50,8 +50,22 @@ const sec2mmss = (seconds) => {
   return `${String(mm).padStart(2, 0)}:${String(ss).padStart(2, 0)}`;
 };
 
+const getArtists = (list) => {
+  const delimiters = [",", "|", ";", "\t", "\n"];
+  for (const deli of delimiters) {
+    const artists = list.split(deli);
+    if (artists.length > 1) {
+      return artists.map((e) => e.trim());
+    }
+  }
+
+  // no delimiter found
+  return [list];
+};
+
 const generateInfo = async (metadata, path) => {
   const hash = crypto.createHash("md5");
+  const artists = await getArtists(metadata.common.artist);
   return {
     trackid: generateTrackId(
       metadata.common.artist,
@@ -59,7 +73,7 @@ const generateInfo = async (metadata, path) => {
       metadata.common.album
     ),
     title: metadata.common.title,
-    artist: metadata.common.artist,
+    artist: artists,
     album: metadata.common.album,
     album_id: hash.update(metadata.common.album).digest("hex").substring(0, 16),
     genre: "",

@@ -1,13 +1,19 @@
-import mongoose from "mongoose";
-import privateLib from "./models/privateLib.js";
+import fs from "fs";
+import { Library, PrivateLib, Playlists, User, Track } from "./models.js";
+
+async function insertIndex2Library() {
+  try {
+    const data = fs.readFileSync("./Library/index.json", "utf-8");
+    const index = JSON.parse(data);
+    await Library.insertMany(index);
+    process.exit();
+  } catch (err) {
+    console.log(err);
+  }
+}
 
 const main = async () => {
-  mongoose.connect("mongodb://localhost:2717/testDB");
-  const demo = new privateLib({
-    type: "test",
-    id: 1,
-  });
-  demo.save().then(() => console.log(demo));
+  insertIndex2Library();
 };
 
 main();
