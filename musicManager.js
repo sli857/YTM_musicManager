@@ -2,8 +2,6 @@ import fs from "fs";
 import os from "os";
 import { Worker } from "worker_threads";
 
-var lib = [];
-
 const loadFiles = (path) => {
   const paths = [];
   fs.readdirSync(path).forEach((file) => {
