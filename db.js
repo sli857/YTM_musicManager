@@ -1,5 +1,5 @@
 import fs from "fs";
-import { Library, PrivateLib, Playlists, User, Track } from "./models.js";
+import { Library, PrivateLib, Playlist, Track, User } from "./models.js";
 
 async function insertIndex2Library() {
   try {
@@ -12,8 +12,4 @@ async function insertIndex2Library() {
   }
 }
 
-const main = async () => {
-  insertIndex2Library();
-};
-
-main();
+export { insertIndex2Library };

@@ -1,6 +1,7 @@
 import fs from "fs";
 import os from "os";
 import { Worker } from "worker_threads";
+import { insertIndex2Library } from "./db.js";
 
 const loadFiles = (path) => {
   const paths = [];
@@ -90,12 +91,16 @@ const libraryInit = async (path) => {
 const libraryLoad = async (filePath) => {
   if (!fs.existsSync(filePath)) {
     await libraryInit("./Library");
+    await insertIndex2Library();
+
     return;
   }
   try {
     const data = fs.readFileSync(filePath, "utf8");
     const lib = JSON.parse(data);
     await libraryUpdate(lib, "./Library");
+    await insertIndex2Library();
+
     process.exit(0);
   } catch (err) {
     console.error(err);

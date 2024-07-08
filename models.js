@@ -1,99 +1,107 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
+import pkg from "mongoose";
+const { Collection, Schema } = pkg;
 import autoIncre from "mongoose-sequence";
 
 const dbport = 2717;
-// Connect to different databases
-const userConnection = mongoose.createConnection(
-  `mongodb://localhost:${dbport}/Users`
+
+const dbConnection = mongoose.createConnection(
+  `mongodb://localhost:${dbport}/ytm-db`
 );
 
-const libraryConnection = mongoose.createConnection(
-  `mongodb://localhost:${dbport}/Library`
+var librarySchema = new mongoose.Schema(
+  {
+    track_id: String,
+    title: String,
+    artist: Array,
+    album: String,
+    album_id: String,
+    genre: String,
+    copyright: String,
+    length: String,
+    track_number: Number,
+    quality: {
+      type: String,
+      default: "STD",
+    },
+    file: String,
+  },
+  { Collection: "libraries" }
 );
 
-const playlistConnection = mongoose.createConnection(
-  `mongodb://localhost:${dbport}/Playlists`
+const Library = dbConnection.model("library", librarySchema);
+
+var privateLibSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      enum: ["track", "album", "playlist"],
+      required: true,
+    },
+    id: {
+      type: String,
+      required: true,
+    },
+    added_data: { type: Date, default: Date.now() },
+  },
+  { Collection: "playlists" }
 );
-const historyConnection = mongoose.createConnection(
-  `mongodb://localhost:${dbport}/History`
+
+const PrivateLib = dbConnection.model("private-lib", privateLibSchema);
+
+var playlistSchemma = new mongoose.Schema(
+  {
+    pid: Number,
+    author: Number, //uid
+    name: String,
+    description: String,
+    added: Number,
+    liked: Number,
+    shared: Number,
+    played: Number,
+    public: Boolean,
+    image: String,
+    type: {
+      type: String,
+      enum: ["playlist", "album"],
+    },
+    last_update: Date,
+  },
+  { Collection: "playlists" }
 );
 
-var librarySchema = new mongoose.Schema({
-  track_id: String,
-  title: String,
-  artist: Array,
-  album: String,
-  album_id: String,
-  genre: String,
-  copyright: String,
-  length: String,
-  track_number: Number,
-  quality: {
-    type: String,
-    default: "STD",
-  },
-  file: String,
-});
-var Library = libraryConnection.model("music-metadata", librarySchema);
-
-// Define privateLib schema
-var privateLibSchema = new mongoose.Schema({
-  type: {
-    type: String,
-    enum: ["track", "album", "playlist"],
-    required: true,
-  },
-  id: {
-    type: String,
-    required: true,
-  },
-  added_data: { type: Date, default: Date.now() },
-});
-
-// TODO: replace uid
-const PrivateLib = playlistConnection.model("u_<uid>", privateLibSchema);
-
-var playlistSchemma = new mongoose.Schema({
-  pid: Number,
-  author: Number, //uid
-  name: String,
-  description: String,
-  added: Number,
-  liked: Number,
-  shared: Number,
-  played: Number,
-  public: Boolean,
-  image: String,
-  type: {
-    type: String,
-    enum: ["playlist", "album"],
-  },
-  last_update: Date,
-});
-
-const Playlists = playlistConnection.model("index", playlistSchemma);
+const Playlist = dbConnection.model("playlist", playlistSchemma);
 
 // Define track schema
-var trackSchema = new mongoose.Schema({
-  tid: Number, //track_id
-});
+var trackSchema = new mongoose.Schema(
+  {
+    tid: Number, //track_id
+  },
+  { Collection: "playlists" }
+);
 trackSchema.plugin(autoIncre(mongoose), { inc_field: "tid" });
 
+const Track = dbConnection.model("tracks", trackSchema);
+
 //TODO: replace pid
-const Track = playlistConnection.model("p_<pid>", trackSchema);
 
 // Define user schema
-var userSchema = new mongoose.Schema({
-  uid: Number,
-  name: String,
-  secret: String,
-  subscribe: String,
-  subscribe_expired: Date,
-  last_login: Date,
-  playing: Number, //Machine_Id
-});
+var userSchema = new mongoose.Schema(
+  {
+    uid: Number,
+    name: String,
+    secret: String,
+    subscribe: String,
+    subscribe_expired: Date,
+    last_login: Date,
+    playing: Number, //Machine_Id
+  },
+  {
+    Collection: "users",
+  }
+);
 
-const User = userConnection.model("User", userSchema);
+const User = dbConnection.model("user", userSchema);
 
 // Export the models
-export { Library, PrivateLib, Playlists, Track, User };
+export { Library, PrivateLib, Playlist, Track, User };
