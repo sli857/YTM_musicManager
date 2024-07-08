@@ -1,12 +1,27 @@
-const Koa = require("koa");
-const jwt = require("koa-jwt");
-const axios = require("axios");
-const musicMetadata = import("music-metadata");
-const jpeg = require("jpeg-js");
+import Koa from "koa";
+import Router from "koa-router";
+import fs from "fs";
+import { Library } from "./models.js";
+
+const port = process.argv[2] || 3000;
 
 const app = new Koa();
+const router = new Router();
 
-app.use(async (ctx) => {
-  ctx.body = "Hello World";
+router.get("/stream", async (ctx) => {
+  const { trackid } = ctx.query;
+  if (trackid) {
+    const music = await Library.find({ trackid: trackid });
+    if (music[0]) {
+      const path = music[0].file;
+      ctx.set({ "Content-Type": "audio/mp3" });
+      ctx.status = 206;
+      ctx.body = fs.createReadStream(path);
+    } else {
+      ctx.body = "music not found";
+    }
+  }
 });
-app.listen(3000);
+
+app.use(router.routes());
+app.listen(port);
