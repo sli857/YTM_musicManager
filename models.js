@@ -76,10 +76,11 @@ const Playlist = dbConnection.model("playlist", playlistSchemma);
 var trackSchema = new mongoose.Schema(
   {
     tid: Number, //track_id
+    order: Number,
   },
   { Collection: "playlists" }
 );
-trackSchema.plugin(autoIncre(mongoose), { inc_field: "tid" });
+trackSchema.plugin(autoIncre(mongoose), { inc_field: "order" });
 
 const Track = dbConnection.model("tracks", trackSchema);
 
@@ -89,7 +90,7 @@ const Track = dbConnection.model("tracks", trackSchema);
 var userSchema = new mongoose.Schema(
   {
     uid: Number,
-    name: String,
+    name: { type: String, unique: true },
     secret: String,
     subscribe: String,
     subscribe_expired: Date,

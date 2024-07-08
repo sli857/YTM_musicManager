@@ -1,7 +1,9 @@
 import Koa from "koa";
 import Router from "koa-router";
+import cors from "koa-cors";
+import bodyParser from "koa-bodyparser";
 import fs from "fs";
-import { Library } from "./models.js";
+import { Library, User } from "./models.js";
 
 const port = process.argv[2] || 3000;
 
@@ -23,5 +25,26 @@ router.get("/stream", async (ctx) => {
   }
 });
 
-app.use(router.routes());
+router.post("/login", async (ctx) => {
+  console.log(ctx.request.body);
+});
+
+router.post("/signup", async (ctx) => {
+  try {
+    const newUser = new User({
+      name: ctx.request.body.name,
+      secret: ctx.request.body.secret,
+    });
+
+    await newUser.save();
+    ctx.body = { status: 0, msg: "Success" };
+  } catch (err) {
+    ctx.body = { status: 1, msg: "User Already Exists." };
+    console.log(err);
+  }
+});
+
+app.use(cors());
+app.use(bodyParser());
+app.use(router.routes()).use(router.allowedMethods);
 app.listen(port);
