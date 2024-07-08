@@ -11,7 +11,7 @@ const dbConnection = mongoose.createConnection(
 
 var librarySchema = new mongoose.Schema(
   {
-    track_id: String,
+    trackid: { type: String, index: true },
     title: String,
     artist: Array,
     album: String,
