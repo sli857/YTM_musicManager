@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 import pkg from "mongoose";
-const { Collection, Schema } = pkg;
 import autoIncre from "mongoose-sequence";
-import { DB_PORT } from "../config/config";
+
+import { DB_PORT } from "../config/config.js";
+const { Collection, Schema } = pkg;
 
 const dbConnection = mongoose.createConnection(
   `mongodb://localhost:${DB_PORT}/ytm-db`

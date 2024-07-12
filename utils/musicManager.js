@@ -98,8 +98,6 @@ const libraryLoad = async (filePath) => {
     const data = fs.readFileSync(filePath, "utf8");
     const lib = JSON.parse(data);
     await libraryUpdate(lib, "./Library");
-
-    process.exit(0);
   } catch (err) {
     console.error(err);
   }
@@ -136,4 +134,4 @@ const libraryUpdate = async (lib, path) => {
 };
 
 await libraryLoad("./Library/index.json");
-insertIndex2Library();
+await insertIndex2Library();
