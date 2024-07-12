@@ -1,7 +1,7 @@
 import fs from "fs";
 import os from "os";
 import { Worker } from "worker_threads";
-import { insertIndex2Library } from "./db.js";
+import { insertIndex2Library } from "./initDB.js";
 
 const loadFiles = (path) => {
   const paths = [];
@@ -45,7 +45,6 @@ const runInitWorkers = async (jobs, indexPath) => {
   fs.appendFileSync(indexPath, "\n]");
 
   console.log("All init workers completed");
-  process.exit(0);
 };
 
 const runUpdateWorkers = async (lib, jobs) => {
@@ -91,8 +90,6 @@ const libraryInit = async (path) => {
 const libraryLoad = async (filePath) => {
   if (!fs.existsSync(filePath)) {
     await libraryInit("./Library");
-
-    return;
   }
   try {
     const data = fs.readFileSync(filePath, "utf8");
@@ -133,5 +130,4 @@ const libraryUpdate = async (lib, path) => {
   return;
 };
 
-await libraryLoad("./Library/index.json");
-await insertIndex2Library();
+export { libraryLoad };

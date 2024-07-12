@@ -5,7 +5,9 @@ import path from "path";
 import { Library } from "../models/models.js";
 const streamRouter = new Router();
 
-streamRouter.get("/stream", async (ctx) => {
+streamRouter.prefix("/stream");
+
+streamRouter.get("/", async (ctx) => {
   try {
     const { trackid } = ctx.query;
     if (!trackid) {

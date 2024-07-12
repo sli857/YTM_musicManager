@@ -5,7 +5,9 @@ import { decrypt, encrypt } from "../middlewares/secret.js";
 
 const loginRouter = new Router();
 
-loginRouter.post("/login", async (ctx) => {
+loginRouter.prefix("/login");
+
+loginRouter.post("/", async (ctx) => {
   try {
     const { name, secret } = ctx.request.body;
 

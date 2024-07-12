@@ -13,7 +13,6 @@ async function insertIndex2Library() {
     const index = await JSON.parse(data);
     console.log("inserting");
     await Library.insertMany(index);
-    process.exit();
   } catch (err) {
     console.log(err);
   }
