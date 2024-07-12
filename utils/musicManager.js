@@ -24,7 +24,7 @@ const splitPath = (paths, n) => {
 const runInitWorkers = async (jobs, indexPath) => {
   const workerPromises = jobs.map((job, i) => {
     return new Promise((resolve) => {
-      const worker = new Worker("./worker.js");
+      const worker = new Worker("./utils/worker.js");
       worker.postMessage({ task: "init", job: job });
       worker.on("message", (message) => {
         if (message.status === "done") {
@@ -51,7 +51,7 @@ const runInitWorkers = async (jobs, indexPath) => {
 const runUpdateWorkers = async (lib, jobs) => {
   const workerPromises = jobs.map((job, i) => {
     return new Promise((resolve) => {
-      const worker = new Worker("./worker.js");
+      const worker = new Worker("./utils/worker.js");
       worker.postMessage({ task: "update", job: job, lib: lib });
       // TODO worker.on();
       worker.on("message", (message) => {
@@ -91,7 +91,6 @@ const libraryInit = async (path) => {
 const libraryLoad = async (filePath) => {
   if (!fs.existsSync(filePath)) {
     await libraryInit("./Library");
-    await insertIndex2Library();
 
     return;
   }
@@ -99,7 +98,6 @@ const libraryLoad = async (filePath) => {
     const data = fs.readFileSync(filePath, "utf8");
     const lib = JSON.parse(data);
     await libraryUpdate(lib, "./Library");
-    await insertIndex2Library();
 
     process.exit(0);
   } catch (err) {
@@ -137,4 +135,5 @@ const libraryUpdate = async (lib, path) => {
   return;
 };
 
-libraryLoad("./Library/index.json");
+await libraryLoad("./Library/index.json");
+insertIndex2Library();

@@ -1,5 +1,11 @@
 import fs from "fs";
-import { Library, PrivateLib, Playlist, Track, User } from "./models.js";
+import {
+  Library,
+  PrivateLib,
+  Playlist,
+  Track,
+  User,
+} from "../models/models.js";
 
 async function insertIndex2Library() {
   try {

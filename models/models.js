@@ -2,11 +2,10 @@ import mongoose from "mongoose";
 import pkg from "mongoose";
 const { Collection, Schema } = pkg;
 import autoIncre from "mongoose-sequence";
-
-const dbport = 2717;
+import { DB_PORT } from "../config/config";
 
 const dbConnection = mongoose.createConnection(
-  `mongodb://localhost:${dbport}/ytm-db`
+  `mongodb://localhost:${DB_PORT}/ytm-db`
 );
 
 var librarySchema = new mongoose.Schema(

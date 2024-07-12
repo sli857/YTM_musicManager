@@ -3,15 +3,11 @@ import Router from "koa-router";
 import cors from "koa-cors";
 import bodyParser from "koa-bodyparser";
 import fs from "fs";
-import { Library, User } from "./models.js";
-import CryptoJS from "crypto-js";
 import path from "path";
-const port = process.argv[2] || 3000;
 
-function decrypt(str) {
-  const bytes = CryptoJS.AES.decrypt(str, "Google2024Summer");
-  return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-}
+import { Library, User } from "./models.js";
+import { decrypt, encrypt } from "./middlewares/secret.js";
+import { KOA_PORT } from "./config/config.js";
 
 const app = new Koa();
 const router = new Router();
@@ -136,4 +132,4 @@ router.post("/signup", async (ctx) => {
 app.use(cors());
 app.use(bodyParser());
 app.use(router.routes()).use(router.allowedMethods);
-app.listen(port);
+app.listen(KOA_PORT);
