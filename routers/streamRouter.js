@@ -2,7 +2,7 @@ import Router from "koa-router";
 import fs from "fs";
 import path from "path";
 
-import { Library } from "../models/models.js";
+import { dbConnection, librarySchema } from "../models/models.js";
 const streamRouter = new Router();
 
 streamRouter.prefix("/stream");
@@ -15,7 +15,7 @@ streamRouter.get("/", async (ctx) => {
       ctx.body = "Track ID is required";
       return;
     }
-
+    const Library = dbConnection.collection("Libraries");
     const music = await Library.findOne({ trackid: trackid });
     if (!music) {
       ctx.status = 404;

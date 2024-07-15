@@ -1,6 +1,6 @@
 import Router from "koa-router";
 
-import { User } from "../models/models.js";
+import { dbConnection } from "../models/models.js";
 import { decrypt, encrypt } from "../middlewares/secret.js";
 
 const signupRouter = new Router();
@@ -16,13 +16,11 @@ signupRouter.post("/", async (ctx) => {
       return;
     }
     const decrypted = decrypt(secret);
-
-    const newUser = new User({
+    dbConnection.collection("Users").insertOne({
       name: name,
       secret: decrypted,
     });
 
-    await newUser.save();
     ctx.status = 200;
     ctx.body = { status: 0, msg: "Success" };
   } catch (err) {

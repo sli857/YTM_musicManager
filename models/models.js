@@ -1,17 +1,21 @@
 import mongoose from "mongoose";
 import pkg from "mongoose";
 import autoIncre from "mongoose-sequence";
-
 import { DB_PORT } from "../config/config.js";
+
 const { Collection, Schema } = pkg;
 
 const dbConnection = mongoose.createConnection(
-  `mongodb://localhost:${DB_PORT}/ytm-db`
+  `mongodb://localhost:${DB_PORT}/ytm-db`,
+  {
+    serverSelectionTimeoutMS: 500000,
+    socketTimeoutMS: 450000,
+  }
 );
 
 var librarySchema = new mongoose.Schema(
   {
-    trackid: { type: String, index: true },
+    trackid: { type: String, index: true, unique: true },
     title: String,
     artist: Array,
     album: String,
@@ -29,9 +33,7 @@ var librarySchema = new mongoose.Schema(
   { Collection: "libraries" }
 );
 
-const Library = dbConnection.model("library", librarySchema);
-
-var privateLibSchema = new mongoose.Schema(
+var indexSchema = new mongoose.Schema(
   {
     type: {
       type: String,
@@ -47,7 +49,14 @@ var privateLibSchema = new mongoose.Schema(
   { Collection: "playlists" }
 );
 
-const PrivateLib = dbConnection.model("private-lib", privateLibSchema);
+var trackSchema = new mongoose.Schema(
+  {
+    tid: String, //track_id
+    order: Number,
+  },
+  { Collection: "playlists" }
+);
+trackSchema.plugin(autoIncre(mongoose), { inc_field: "order" });
 
 var playlistSchemma = new mongoose.Schema(
   {
@@ -55,11 +64,11 @@ var playlistSchemma = new mongoose.Schema(
     author: Number, //uid
     name: String,
     description: String,
-    added: Number,
-    liked: Number,
-    shared: Number,
-    played: Number,
-    public: Boolean,
+    added: { type: Number, default: 0 },
+    liked: { type: Number, default: 0 },
+    shared: { type: Number, default: 0 },
+    played: { type: Number, default: 0 },
+    public: { type: Boolean, default: true },
     image: String,
     type: {
       type: String,
@@ -70,23 +79,6 @@ var playlistSchemma = new mongoose.Schema(
   { Collection: "playlists" }
 );
 
-const Playlist = dbConnection.model("playlist", playlistSchemma);
-
-// Define track schema
-var trackSchema = new mongoose.Schema(
-  {
-    tid: Number, //track_id
-    order: Number,
-  },
-  { Collection: "playlists" }
-);
-trackSchema.plugin(autoIncre(mongoose), { inc_field: "order" });
-
-const Track = dbConnection.model("tracks", trackSchema);
-
-//TODO: replace pid
-
-// Define user schema
 var userSchema = new mongoose.Schema(
   {
     uid: Number,
@@ -102,7 +94,12 @@ var userSchema = new mongoose.Schema(
   }
 );
 
-const User = dbConnection.model("user", userSchema);
-
 // Export the models
-export { Library, PrivateLib, Playlist, Track, User };
+export {
+  dbConnection,
+  librarySchema,
+  indexSchema,
+  trackSchema,
+  playlistSchemma,
+  userSchema,
+};

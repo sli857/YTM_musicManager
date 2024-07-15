@@ -1,7 +1,6 @@
 import fs from "fs";
 import os from "os";
 import { Worker } from "worker_threads";
-import { insertIndex2Library } from "./initDB.js";
 
 const loadFiles = (path) => {
   const paths = [];

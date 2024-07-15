@@ -1,6 +1,6 @@
 import Router from "koa-router";
 
-import { User } from "../models/models.js";
+import { dbConnection } from "../models/models.js";
 import { decrypt, encrypt } from "../middlewares/secret.js";
 
 const loginRouter = new Router();
@@ -19,6 +19,7 @@ loginRouter.post("/", async (ctx) => {
 
     const decrypted = decrypt(secret);
 
+    const User = dbConnection.collection("Users");
     const user = await User.findOne({ name: name, secret: decrypted }).exec();
 
     console.log(user);
