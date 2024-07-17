@@ -44,26 +44,39 @@ async function dbInit(indexPath) {
       "Playlists"
     );
     for (const [albumId, tracks] of albums.entries()) {
-      const pid = Math.floor(Math.random() * 10000);
+      // const pid = Math.floor(Math.random() * 10000);
+      const pid = albumId;
       const plist = new Playlist({
         pid: pid,
         name: tracks[0].album,
         image: `../Library/${albumId}.jpg`,
         type: "album",
       });
-      await plist.save();
-      const thisTrackList = await mongoose.model(
+      await plist
+        .save()
+        .then(console.log("index updated"))
+        .catch((err) => {
+          console.log(`ignored: ${err}`);
+        });
+
+      const collectionName = `p_${pid}`;
+      dbConnection.createCollection(collectionName);
+      const thisTrackList = mongoose.model(
         "track",
         trackSchema,
-        `p_${pid}`
+        collectionName
       );
-      const trackPromises = tracks.map((track) => ({
-        insertOne: { document: { tid: track.trackid } },
-      }));
-      await thisTrackList.bulkWrite(trackPromises);
-
-      console.log("bing bong");
+      const collection = dbConnection.collection(collectionName);
+      const trackList = tracks.map((track, i) => {
+        return collection.insertOne({ tid: track.trackid, order: i });
+      });
+      Promise.all(trackList)
+        .then(console.log(`${collectionName} updated successfully`))
+        .catch((err) => {
+          console.error(err);
+        });
     }
+    return;
   } catch (err) {
     console.log(err);
   }

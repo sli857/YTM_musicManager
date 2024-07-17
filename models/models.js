@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import pkg from "mongoose";
-import autoIncre from "mongoose-sequence";
 import { DB_PORT } from "../config/config.js";
 
 const { Collection, Schema } = pkg;
@@ -51,16 +50,15 @@ var indexSchema = new mongoose.Schema(
 
 var trackSchema = new mongoose.Schema(
   {
-    tid: String, //track_id
+    tid: { type: String, index: true }, //track_id
     order: Number,
   },
   { Collection: "playlists" }
 );
-trackSchema.plugin(autoIncre(mongoose), { inc_field: "order" });
 
 var playlistSchemma = new mongoose.Schema(
   {
-    pid: Number,
+    pid: String,
     author: Number, //uid
     name: String,
     description: String,
