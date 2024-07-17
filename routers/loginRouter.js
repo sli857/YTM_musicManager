@@ -20,7 +20,7 @@ loginRouter.post("/", async (ctx) => {
     const decrypted = decrypt(secret);
 
     const User = dbConnection.collection("Users");
-    const user = await User.findOne({ name: name, secret: decrypted }).exec();
+    const user = await User.findOne({ name: name, secret: decrypted });
 
     console.log(user);
     if (user) {
