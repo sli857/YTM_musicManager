@@ -1,6 +1,6 @@
 import Koa from "koa";
-import cors from "koa-cors";
-import bodyParser from "koa-bodyparser";
+import cors from "@koa/cors";
+import bodyParser from "@koa/bodyparser";
 
 import { KOA_PORT } from "./config/config.js";
 import { streamRouter } from "./routers/streamRouter.js";
@@ -20,5 +20,5 @@ app.use(streamRouter.routes());
 app.use(loginRouter.routes());
 app.use(signupRouter.routes());
 app.listen(KOA_PORT, () => {
-  console.log(`Server is running on port ${KOA_PORT}`);
+  console.log(`\nServer is running on port: ${KOA_PORT}`);
 });
