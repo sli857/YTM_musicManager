@@ -60,7 +60,7 @@ var playlistSchemma = new mongoose.Schema(
   {
     pid: String,
     author: Number, //uid
-    name: String,
+    name: { type: String, unique: true },
     description: String,
     added: { type: Number, default: 0 },
     liked: { type: Number, default: 0 },
@@ -80,7 +80,7 @@ var playlistSchemma = new mongoose.Schema(
 var userSchema = new mongoose.Schema(
   {
     uid: Number,
-    name: { type: String, unique: true },
+    name: { type: String, index: true, unique: true },
     secret: String,
     subscribe: String,
     subscribe_expired: Date,
