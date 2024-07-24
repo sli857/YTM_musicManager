@@ -16,16 +16,23 @@ signupRouter.post("/", async (ctx) => {
       return;
     }
     const decrypted = decrypt(secret);
-    dbConnection.collection("Users").insertOne({
+    const user = dbConnection.collection("Users");
+    if (
+      user.indexExists({
+        name: name,
+      })
+    ) {
+      ctx.status = 401;
+      ctx.body = { status: 1, msg: "User Already Exists." };
+      return;
+    }
+    user.insertOne({
       name: name,
       secret: decrypted,
     });
-
     ctx.status = 200;
     ctx.body = { status: 0, msg: "Success" };
   } catch (err) {
-    ctx.status = 401;
-    ctx.body = { status: 1, msg: "User Already Exists." };
     console.log(err);
   }
 });
