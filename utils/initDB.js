@@ -53,7 +53,7 @@ async function dbInit(indexPath) {
         image: `../Library/${albumId}.jpg`,
         type: "album",
       });
-      await plist
+      plist
         .save()
         .then(console.log(`Playlist inserted successfully: ${album}`))
         .catch((err) => {
@@ -70,7 +70,7 @@ async function dbInit(indexPath) {
       const trackDocuments = tracks.map((track, i) => {
         return new Track({ tid: track.trackid, order: i });
       });
-      await albumCollection
+      albumCollection
         .insertMany(trackDocuments)
         .then(() => {
           console.log(`Tracks inserted successfully: ${collectionName}`);
