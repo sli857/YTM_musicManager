@@ -26,12 +26,15 @@ signupRouter.post("/", async (ctx) => {
       ctx.body = { status: 1, msg: "User Already Exists." };
       return;
     }
-    user.insertOne({
-      name: name,
-      secret: decrypted,
-    });
-    ctx.status = 200;
-    ctx.body = { status: 0, msg: "Success" };
+    user
+      .insertOne({
+        name: name,
+        secret: decrypted,
+      })
+      .then(() => {
+        ctx.status = 200;
+        ctx.body = { status: 0, msg: "Sign up successfully" };
+      });
   } catch (err) {
     console.log(err);
   }
