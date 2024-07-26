@@ -8,6 +8,7 @@ import { loginRouter } from "./routers/loginRouter.js";
 import { signupRouter } from "./routers/signupRouter.js";
 import { libraryLoad } from "./utils/musicManager.js";
 import { dbInit } from "./utils/initDB.js";
+import { testStreamRouter } from "./routers/test.js";
 
 await libraryLoad("./Library/index.json");
 await dbInit("./Library/index.json");
@@ -19,6 +20,7 @@ app.use(bodyParser());
 app.use(streamRouter.routes());
 app.use(loginRouter.routes());
 app.use(signupRouter.routes());
+app.use(testStreamRouter.routes());
 app.listen(KOA_PORT, () => {
   console.log(`\nServer is running on port: ${KOA_PORT}`);
 });

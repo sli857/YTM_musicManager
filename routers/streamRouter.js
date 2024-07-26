@@ -2,7 +2,7 @@ import Router from "koa-router";
 import fs from "fs";
 import path from "path";
 
-import { dbConnection, librarySchema } from "../models/models.js";
+import { dbConnection } from "../models/models.js";
 const streamRouter = new Router();
 
 streamRouter.prefix("/stream");
