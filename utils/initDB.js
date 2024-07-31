@@ -12,6 +12,16 @@ import mongoose from "mongoose";
 
 async function dbInit(indexPath) {
   try {
+    // init User
+    const User = dbConnection.model("User", userSchema, "Users");
+    const user = new User({
+      name: "admin",
+      secret: "admin",
+    });
+    await user.save().then(() => {
+      console.log("Admin saved to db.");
+    });
+
     // init Library
     const library = dbConnection.model("library", librarySchema, "Libraries");
     const data = fs.readFileSync(indexPath, "utf-8");
@@ -44,6 +54,8 @@ async function dbInit(indexPath) {
       playlistSchemma,
       "Playlists"
     );
+
+    var playlistInsertionPromises = [];
     for (const [albumId, { album, tracks }] of albums.entries()) {
       // const pid = Math.floor(Math.random() * 10000);
       const pid = albumId;
@@ -53,7 +65,7 @@ async function dbInit(indexPath) {
         image: `../Library/${albumId}.jpg`,
         type: "album",
       });
-      plist
+      const playlistPromise = plist
         .save()
         .then(console.log(`Playlist inserted successfully: ${album}`))
         .catch((err) => {
@@ -63,14 +75,14 @@ async function dbInit(indexPath) {
             throw err;
           }
         });
-
+      playlistInsertionPromises.push(playlistPromise);
       const collectionName = `p_${pid}`;
       const albumCollection = dbConnection.collection(collectionName);
       const Track = mongoose.model("track", trackSchema, collectionName);
       const trackDocuments = tracks.map((track, i) => {
         return new Track({ tid: track.trackid, order: i });
       });
-      albumCollection
+      const albumInsertionPromises = albumCollection
         .insertMany(trackDocuments)
         .then(() => {
           console.log(`Tracks inserted successfully: ${collectionName}`);
@@ -82,7 +94,10 @@ async function dbInit(indexPath) {
             throw err;
           }
         });
+
+      await Promise.all([albumInsertionPromises]);
     }
+    await Promise.all(playlistInsertionPromises);
     return;
   } catch (err) {
     console.log(err);
