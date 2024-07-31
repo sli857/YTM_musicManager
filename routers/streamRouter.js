@@ -4,7 +4,7 @@ import fs from "fs";
 import {
   getTrackImage,
   getTrackName,
-} from "../controllers/streamController.js";
+} from "../controllers/metadataController.js";
 
 const streamRouter = new Router();
 
@@ -53,17 +53,6 @@ streamRouter.get("/", async (ctx) => {
   }
 
   ctx.body = readStream;
-});
-
-streamRouter.get("/image", async (ctx) => {
-  const { pid, trackid } = ctx.query;
-  const image = await getTrackImage({ pid, trackid });
-  if (!image) {
-    ctx.status = 404;
-    return;
-  }
-  ctx.set("Content-Type", "image/jpeg");
-  ctx.body = image;
 });
 
 export { streamRouter };
