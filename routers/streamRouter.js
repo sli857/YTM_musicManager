@@ -1,11 +1,23 @@
 import Router from "koa-router";
 import fs from "fs";
-import stream from "koa-stream";
-const testStreamRouter = new Router();
 
-testStreamRouter.prefix("/testStream");
-testStreamRouter.get("/", async (ctx) => {
-  const music = "./Library/二十二.mp3";
+import {
+  getTrackImage,
+  getTrackName,
+} from "../controllers/streamController.js";
+
+const streamRouter = new Router();
+
+streamRouter.prefix("/stream");
+streamRouter.get("/", async (ctx) => {
+  const { pid, trackid } = ctx.query;
+  const filename = await getTrackName({ trackid });
+  if (!filename) {
+    ctx.status = 404;
+    return;
+  }
+  const music = `./Library/${filename}.mp3`;
+
   const stat = fs.statSync(music);
   const range = ctx.req.headers.range;
   var readStream;
@@ -39,7 +51,19 @@ testStreamRouter.get("/", async (ctx) => {
     });
     readStream = fs.createReadStream(music);
   }
+
   ctx.body = readStream;
 });
 
-export { testStreamRouter };
+streamRouter.get("/image", async (ctx) => {
+  const { pid, trackid } = ctx.query;
+  const image = await getTrackImage({ pid, trackid });
+  if (!image) {
+    ctx.status = 404;
+    return;
+  }
+  ctx.set("Content-Type", "image/jpeg");
+  ctx.body = image;
+});
+
+export { streamRouter };

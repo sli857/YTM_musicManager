@@ -18,9 +18,15 @@ async function dbInit(indexPath) {
       name: "admin",
       secret: "admin",
     });
-    await user.save().then(() => {
-      console.log("Admin saved to db.");
-    });
+    await user
+      .save()
+      .then(() => {
+        console.log("Admin saved to db.");
+      })
+      .catch((err) => {
+        if (err.code === 11000) {
+        }
+      });
 
     // init Library
     const library = dbConnection.model("library", librarySchema, "Libraries");
