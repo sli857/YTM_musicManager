@@ -1,73 +1,45 @@
 import Router from "koa-router";
 import fs from "fs";
-import path from "path";
+import stream from "koa-stream";
+const testStreamRouter = new Router();
 
-import { dbConnection } from "../models/models.js";
-const streamRouter = new Router();
+testStreamRouter.prefix("/testStream");
+testStreamRouter.get("/", async (ctx) => {
+  const music = "./Library/二十二.mp3";
+  const stat = fs.statSync(music);
+  const range = ctx.req.headers.range;
+  var readStream;
+  if (range !== undefined) {
+    const parts = range.replace(`bytes=`, "").split("-");
+    const partial_start = parts[0];
+    const partial_end = parts[1];
 
-streamRouter.prefix("/stream");
-
-streamRouter.get("/", async (ctx) => {
-  try {
-    const { trackid } = ctx.query;
-    if (!trackid) {
-      ctx.status = 400;
-      ctx.body = "Track ID is required";
-      return;
-    }
-    const Library = dbConnection.collection("Libraries");
-    const music = await Library.findOne({ trackid: trackid });
-    if (!music) {
-      ctx.status = 404;
-      ctx.body = "Music not found";
-      return;
+    if (
+      (isNaN(partial_start) && partial_start.length > 1) ||
+      (isNaN(partial_end) && partial_end.length > 1)
+    ) {
+      return (ctx.status = 500);
     }
 
-    const filePath = path.resolve(music.file);
-    if (!fs.existsSync(filePath)) {
-      ctx.status = 404;
-      ctx.body = "File not found";
-      return;
-    }
+    const start = parseInt(partial_start, 10);
+    const end = partial_end ? parseInt(partial_end, 10) : stat.size - 1;
+    const content_length = end - start + 1;
 
-    const stat = fs.statSync(filePath);
-    const fileSize = stat.size;
-    const range = ctx.headers.range;
-
-    if (range) {
-      const parts = range.replace(`bytes=`, "").split("-");
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-
-      if (start >= fileSize) {
-        ctx.status = 416;
-        ctx.set("Content-Range", `bytes */${fileSize}`);
-        return;
-      }
-
-      ctx.status = 206;
-      ctx.set({
-        "Content-Range": `bytes ${start}-${end}/${fileSize}`,
-        "Accept-Ranges": "bytes",
-        "Content-Length": end - start + 1,
-        "Content-Type": "audio/mp3",
-      });
-
-      ctx.body = fs.createReadStream(filePath, { start, end });
-    } else {
-      ctx.status = 200;
-      ctx.set({
-        "Content-Length": fileSize,
-        "Content-Type": "audio/mp3",
-      });
-
-      ctx.body = fs.createReadStream(filePath);
-    }
-  } catch (err) {
-    console.error("Error while streaming:", err);
-    ctx.status = 500;
-    ctx.body = "Server error";
+    ctx.status = 206;
+    ctx.set({
+      "Content-Type": "audio/mpeg",
+      "Content-Length": content_length,
+      "Content-Range": "bytes " + start + "-" + end + "/" + stat.size,
+    });
+    readStream = fs.createReadStream(music, { start, end });
+  } else {
+    ctx.set({
+      "Content-Type": "audio/mpeg",
+      "Content-Length": stat.size,
+    });
+    readStream = fs.createReadStream(music);
   }
+  ctx.body = readStream;
 });
 
-export { streamRouter };
+export { testStreamRouter };
