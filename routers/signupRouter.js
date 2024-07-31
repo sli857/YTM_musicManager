@@ -15,27 +15,26 @@ signupRouter.post("/", async (ctx) => {
       ctx.body = { status: 1, msg: "Name and secret are required." };
       return;
     }
-    const decrypted = decrypt(secret);
     const user = dbConnection.collection("Users");
-    if (
-      user.indexExists({
-        name: name,
-      })
-    ) {
+    const exist = await user.findOne({ name: name });
+
+    if (exist) {
       ctx.status = 401;
-      ctx.body = { status: 1, msg: "User Already Exists." };
+      ctx.body = { status: 1, msg: "User already exists." };
       return;
     }
-    user
-      .insertOne({
-        name: name,
-        secret: decrypted,
-      })
-      .then(() => {
-        ctx.status = 200;
-        ctx.body = { status: 0, msg: "Sign up successfully" };
-      });
+
+    const decrypted = decrypt(secret);
+    const newUser = await user.insertOne({
+      name: name,
+      secret: decrypted,
+    });
+    ctx.status = 201;
+    ctx.body = { status: 0, msg: "User registered successfully." };
+    return;
   } catch (err) {
+    ctx.status = 500;
+    ctx.body = { status: 1, msg: "Internal server error." };
     console.log(err);
   }
 });
