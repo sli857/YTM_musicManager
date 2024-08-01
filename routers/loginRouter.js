@@ -22,7 +22,6 @@ loginRouter.post("/", async (ctx) => {
     const User = dbConnection.collection("Users");
     const user = await User.findOne({ name: name, secret: decrypted });
 
-    console.log(user);
     if (user) {
       ctx.status = 200;
       ctx.body = { status: 0, msg: "Success" };

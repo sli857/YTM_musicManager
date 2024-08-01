@@ -35,8 +35,12 @@ metadataRouter.get("/playlist", async (ctx) => {
   try {
     const { pid } = ctx.query;
     const Playlist = dbConnection.collection(`p_${pid}`);
+    const tracks = await Playlist.find().toArray();
+    const trackids = tracks.map((track) => track.tid);
     const Library = dbConnection.collection("Libraries");
-    const playlist = await Library.find().toArray();
+    const playlist = await Library.find({
+      trackid: { $in: trackids },
+    }).toArray();
 
     const promises = playlist.map((track) => {
       return Library.findOne({ trackid: track.tid });
